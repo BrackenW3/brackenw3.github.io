@@ -1,0 +1,53 @@
+name: Deploy Worker Agent
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Cloudflare_Workers/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Auto-Detect and Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "Searching for wrangler.toml..."
+          # Find the file, ignoring hidden folders like .git
+          TOML_FILE=$(find . -name "wrangler.toml" -not -path "*/.*" | head -n 1)
+
+          if [ -z "$TOML_FILE" ]; then
+            echo "CRITICAL ERROR: wrangler.toml not found anywhere in the repo!"
+            echo "Here is the full file listing so you can see where it is:"
+            ls -R
+            exit 1
+          fi
+
+          echo "Found configuration at: $TOML_FILE"
+          
+          # Get the folder where the file lives
+          WORKER_DIR=$(dirname "$TOML_FILE")
+          
+          # Install dependencies (if package.json exists there)
+          if [ -f "$WORKER_DIR/package.json" ]; then
+            echo "Installing dependencies in $WORKER_DIR..."
+            cd "$WORKER_DIR"
+            npm install
+            cd - > /dev/null
+          fi
+
+          # Deploy using the specific config file we found
+          echo "Deploying..."
+          npx wrangler deploy --config="$TOML_FILE"
