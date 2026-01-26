@@ -1,53 +1,68 @@
-name: Deploy Worker Agent
+name: Deploy Worker (Nuclear Option)
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'Cloudflare_Workers/**'
+  workflow_dispatch: # Allows you to click "Run" manually in GitHub Actions tab
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Find and Deploy
     steps:
-      - uses: actions/checkout@v4
+      # STEP 1: DOWNLOAD YOUR CODE
+      # Without this, the server is empty. This fixes "no location to place it".
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
+      # STEP 2: SETUP NODE (Standard environment)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Auto-Detect and Deploy
+      # STEP 3: THE AUTO-PILOT DEPLOY SCRIPT
+      - name: Search, Install, and Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "Searching for wrangler.toml..."
-          # Find the file, ignoring hidden folders like .git
+          echo "============================================"
+          echo "STARTING AUTO-PILOT DEPLOYMENT"
+          echo "============================================"
+
+          # 1. FIND THE WRANGLER.TOML FILE
+          # We search the whole repo for 'wrangler.toml' to find where you hid the code.
           TOML_FILE=$(find . -name "wrangler.toml" -not -path "*/.*" | head -n 1)
 
           if [ -z "$TOML_FILE" ]; then
-            echo "CRITICAL ERROR: wrangler.toml not found anywhere in the repo!"
-            echo "Here is the full file listing so you can see where it is:"
+            echo "CRITICAL FAILURE: Could not find 'wrangler.toml' anywhere."
+            echo "Listing all files in repository to help you debug:"
             ls -R
             exit 1
           fi
 
-          echo "Found configuration at: $TOML_FILE"
+          echo "Found configuration file: $TOML_FILE"
           
-          # Get the folder where the file lives
+          # 2. MOVE INTO THAT FOLDER
           WORKER_DIR=$(dirname "$TOML_FILE")
-          
-          # Install dependencies (if package.json exists there)
-          if [ -f "$WORKER_DIR/package.json" ]; then
-            echo "Installing dependencies in $WORKER_DIR..."
-            cd "$WORKER_DIR"
+          echo "Moving into directory: $WORKER_DIR"
+          cd "$WORKER_DIR"
+
+          # 3. INSTALL DEPENDENCIES (Fixes 'missing something with checkout')
+          # If we see a package.json, we install the tools.
+          if [ -f "package.json" ]; then
+            echo "Found package.json. Installing dependencies..."
             npm install
-            cd - > /dev/null
+          else
+            echo "No package.json found. Attempting to deploy without dependencies..."
           fi
 
-          # Deploy using the specific config file we found
-          echo "Deploying..."
-          npx wrangler deploy --config="$TOML_FILE"
+          # 4. DEPLOY TO CLOUDFLARE
+          echo "Deploying to Cloudflare..."
+          npx wrangler deploy
+
+          echo "============================================"
+          echo "DEPLOYMENT SUCCESSFUL"
+          echo "============================================"
