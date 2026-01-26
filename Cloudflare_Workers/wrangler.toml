@@ -1,0 +1,7 @@
+name = "dashboard-api"
+
+# This path is relative to the wrangler.toml file itself
+main = "src/index.js"  
+# If your file is actually named "worker.js", change this line!
+
+compatibility_date = "2024-01-01"
