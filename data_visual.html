@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bracken Analytics</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .dashboard-frame {
+            width: 100%;
+            height: 800px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tabs { margin-bottom: 20px; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        button.active { background: #0070f3; color: white; border-color: #0070f3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Data Workspace</h1>
+    
+    <div class="tabs">
+        <button onclick="loadView('dashboard_files/plotly_chart.html')" class="active">Sales Report (Plotly)</button>
+        <button onclick="loadView('dashboard_files/explorer.html')">Data Explorer (PyGWalker)</button>
+    </div>
+
+    <iframe id="viewer" class="dashboard-frame" src="dashboard_files/plotly_chart.html"></iframe>
+</div>
+
+<script>
+    function loadView(file) {
+        document.getElementById('viewer').src = file;
+        
+        // Simple button active state toggle
+        document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+</script>
+
+</body>
+</html>
