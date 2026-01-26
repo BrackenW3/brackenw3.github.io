@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bracken Dashboard</title>
+    <style>
+        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2rem; background: #f4f4f5; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+        .status { padding: 0.5rem; border-radius: 4px; display: inline-block; margin-bottom: 1rem; font-size: 0.85rem; font-weight: bold; }
+        .success { background: #dcfce7; color: #166534; }
+        .error { background: #fee2e2; color: #991b1b; }
+        pre { background: #f1f5f9; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Dashboard Data</h2>
+    <div id="status" class="status">Loading...</div>
+    
+    <pre id="data-display">Waiting for data...</pre>
+</div>
+
+<script>
+    // 1. Define your Worker URL
+    const API_URL = "https://api.willbracken.com/github-data";
+
+    async function loadDashboard() {
+        const statusEl = document.getElementById('status');
+        const displayEl = document.getElementById('data-display');
+
+        try {
+            // 2. Fetch data securely from your Cloudflare Worker
+            const response = await fetch(API_URL);
+            
+            if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+            
+            const data = await response.json();
+
+            // 3. Display the data
+            statusEl.textContent = "● System Online";
+            statusEl.className = "status success";
+            displayEl.textContent = JSON.stringify(data, null, 2);
+
+        } catch (error) {
+            console.error(error);
+            statusEl.textContent = "● Connection Failed";
+            statusEl.className = "status error";
+            displayEl.textContent = "Error: " + error.message;
+        }
+    }
+
+    // Run on load
+    loadDashboard();
+</script>
+
+</body>
+</html>
