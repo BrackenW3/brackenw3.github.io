@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Will Bracken</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .login-card {
+            max-width: 450px;
+            width: 100%;
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .nav-tabs .nav-link {
+            color: #495057;
+        }
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .btn-github {
+            background-color: #2ea44f;
+            color: white;
+        }
+        .btn-github:hover {
+            background-color: #2c974b;
+            color: white;
+        }
+        .btn-vault {
+            background-color: #000;
+            color: white;
+        }
+        .btn-vault:hover {
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="d-flex justify-content-center">
+            <div class="card login-card">
+                <div class="card-header bg-white border-bottom-0 pb-0">
+                    <div class="text-center my-3">
+                        <h3><i class="fas fa-user-shield text-primary"></i> Secure Login</h3>
+                        <p class="text-muted small">Authenticate to access restricted data.</p>
+                    </div>
+                    <ul class="nav nav-tabs nav-fill" id="authTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="github-tab" data-bs-toggle="tab" data-bs-target="#github" type="button" role="tab" aria-controls="github" aria-selected="true">
+                                <i class="fab fa-github"></i> GitHub
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="vault-tab" data-bs-toggle="tab" data-bs-target="#vault" type="button" role="tab" aria-controls="vault" aria-selected="false">
+                                <i class="fas fa-lock"></i> Vault
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <div class="tab-content" id="authTabsContent">
+
+                        <!-- GitHub Form -->
+                        <div class="tab-pane fade show active" id="github" role="tabpanel" aria-labelledby="github-tab">
+                            <form id="githubForm" onsubmit="handleGitHubLogin(event)">
+                                <div class="mb-3">
+                                    <label for="gh-token" class="form-label">Personal Access Token</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                        <input type="password" class="form-control" id="gh-token" placeholder="ghp_..." required>
+                                    </div>
+                                    <div class="form-text">Your token is used directly with GitHub API.</div>
+                                </div>
+                                <button type="submit" class="btn btn-github w-100">
+                                    Authenticate with GitHub
+                                </button>
+                            </form>
+                            <div id="gh-alert" class="alert mt-3 d-none" role="alert"></div>
+                        </div>
+
+                        <!-- Vault Form -->
+                        <div class="tab-pane fade" id="vault" role="tabpanel" aria-labelledby="vault-tab">
+                            <form id="vaultForm" onsubmit="handleVaultLogin(event)">
+                                <div class="mb-3">
+                                    <label for="vault-addr" class="form-label">Vault Address</label>
+                                    <input type="url" class="form-control" id="vault-addr" placeholder="https://vault.example.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="vault-token" class="form-label">Vault Token</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-ticket-alt"></i></span>
+                                        <input type="password" class="form-control" id="vault-token" placeholder="hvs...." required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-vault w-100">
+                                    Verify Token
+                                </button>
+                            </form>
+                            <div id="vault-alert" class="alert mt-3 d-none" role="alert"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <a href="index.html" class="text-decoration-none text-muted small"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Auth Logic -->
+    <script src="assets/js/auth.js"></script>
+
+    <script>
+        // UI handlers bridge to auth.js functions
+        async function handleGitHubLogin(e) {
+            e.preventDefault();
+            const tokenInput = document.getElementById('gh-token');
+            const alertBox = document.getElementById('gh-alert');
+            const btn = e.target.querySelector('button[type="submit"]');
+
+            const token = tokenInput.value.trim();
+            if(!token) return;
+
+            // Reset UI
+            alertBox.classList.add('d-none');
+            alertBox.classList.remove('alert-success', 'alert-danger');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Authenticating...';
+
+            try {
+                const user = await authenticateGitHub(token);
+
+                alertBox.textContent = `Welcome, ${user.login}!`;
+                alertBox.classList.add('alert-success', 'd-block');
+                alertBox.classList.remove('d-none');
+
+                // Persist session (Demo)
+                sessionStorage.setItem('gh_token', token);
+                sessionStorage.setItem('gh_user', JSON.stringify(user));
+
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+
+            } catch (error) {
+                alertBox.textContent = error.message;
+                alertBox.classList.add('alert-danger', 'd-block');
+                alertBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Authenticate with GitHub';
+            }
+        }
+
+        async function handleVaultLogin(e) {
+            e.preventDefault();
+            const addrInput = document.getElementById('vault-addr');
+            const tokenInput = document.getElementById('vault-token');
+            const alertBox = document.getElementById('vault-alert');
+            const btn = e.target.querySelector('button[type="submit"]');
+
+            const addr = addrInput.value.trim();
+            const token = tokenInput.value.trim();
+
+            alertBox.classList.add('d-none');
+            alertBox.classList.remove('alert-success', 'alert-danger');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verifying...';
+
+            try {
+                const data = await authenticateVault(addr, token);
+
+                alertBox.textContent = 'Token Valid. ID: ' + data.data.id.substring(0, 8) + '...';
+                alertBox.classList.add('alert-success', 'd-block');
+                alertBox.classList.remove('d-none');
+
+            } catch (error) {
+                alertBox.textContent = error.message;
+                alertBox.classList.add('alert-danger', 'd-block');
+                alertBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Verify Token';
+            }
+        }
+    </script>
+</body>
+</html>

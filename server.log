@@ -1,0 +1,6 @@
+127.0.0.1 - - [26/Jan/2026 09:32:02] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Jan/2026 09:32:03] "GET /assets/css/styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [26/Jan/2026 09:32:03] "GET /assets/js/dashboard.js HTTP/1.1" 200 -
+127.0.0.1 - - [26/Jan/2026 09:32:04] "GET /VSCode_Projects/Data_Load/data.json HTTP/1.1" 200 -
+127.0.0.1 - - [26/Jan/2026 09:32:04] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Jan/2026 09:32:04] "GET /assets/js/auth.js HTTP/1.1" 200 -
