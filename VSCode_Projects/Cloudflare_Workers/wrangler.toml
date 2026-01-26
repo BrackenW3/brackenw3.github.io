@@ -1,0 +1,14 @@
+name = "secure-worker-api"
+main = "worker.js"
+compatibility_date = "2023-10-25"
+
+# Workers Logs
+# Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
+# Log to Cloudflare dashboard
+[observability]
+enabled = true
+
+# KV Namespace Bindings (Example)
+# [[kv_namespaces]]
+# binding = "MY_KV"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

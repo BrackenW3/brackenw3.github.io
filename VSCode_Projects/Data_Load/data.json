@@ -1,0 +1,18 @@
+{
+    "projects": [
+        {
+            "name": "Local_Data_Analysis",
+            "description": "A local project analyzing sales data using Pandas.",
+            "language": "Python",
+            "html_url": "#",
+            "stargazers_count": 5
+        },
+        {
+            "name": "Legacy_System_Migration",
+            "description": "Documentation for migrating the legacy CRM to Cloud.",
+            "language": "Java",
+            "html_url": "#",
+            "stargazers_count": 12
+        }
+    ]
+}

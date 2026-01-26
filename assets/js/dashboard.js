@@ -35,17 +35,85 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const results = await Promise.all(promises);
+        const validRepos = results.filter(repo => repo && !repo.error);
 
-        results.forEach(repo => {
-            if (repo) {
-                createRepoCard(repo);
+        // Fetch local custom data
+        let customProjects = [];
+        try {
+            const localResponse = await fetch('VSCode_Projects/Data_Load/data.json');
+            if (localResponse.ok) {
+                const localData = await localResponse.json();
+                customProjects = localData.projects || [];
             }
+        } catch (e) {
+            console.log('No local data found or error loading it.', e);
+        }
+
+        // Combine GitHub repos and custom projects
+        const allProjects = [...customProjects, ...validRepos];
+
+        allProjects.forEach(repo => {
+            createRepoCard(repo);
         });
 
+        if (allProjects.length > 0) {
+            renderChart(allProjects);
+        }
+
         // Remove loading spinner if results were empty (though we handle specific errors)
-        if (results.length === 0) {
+        if (allProjects.length === 0) {
             grid.innerHTML = '<div class="col-12 text-center"><p>No repositories found.</p></div>';
         }
+    }
+
+    function renderChart(repos) {
+        const ctx = document.getElementById('repoChart');
+        if (!ctx) return; // Guard clause in case element is missing
+
+        const names = repos.map(r => r.name);
+        const stars = repos.map(r => r.stargazers_count);
+        const forks = repos.map(r => r.forks_count);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: names,
+                datasets: [
+                    {
+                        label: 'Stars',
+                        data: stars,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Forks',
+                        data: forks,
+                        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Repository Engagement (Stars & Forks)'
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
     }
 
     function createRepoCard(repo) {
