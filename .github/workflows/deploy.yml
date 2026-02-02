@@ -1,68 +1,22 @@
-name: Deploy Worker (Nuclear Option)
+name: Deploy Worker
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allows you to click "Run" manually in GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Find and Deploy
+    name: Deploy
     steps:
-      # STEP 1: DOWNLOAD YOUR CODE
-      # Without this, the server is empty. This fixes "no location to place it".
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # STEP 2: SETUP NODE (Standard environment)
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
         with:
-          node-version: '20'
-
-      # STEP 3: THE AUTO-PILOT DEPLOY SCRIPT
-      - name: Search, Install, and Deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          echo "============================================"
-          echo "STARTING AUTO-PILOT DEPLOYMENT"
-          echo "============================================"
-
-          # 1. FIND THE WRANGLER.TOML FILE
-          # We search the whole repo for 'wrangler.toml' to find where you hid the code.
-          TOML_FILE=$(find . -name "wrangler.toml" -not -path "*/.*" | head -n 1)
-
-          if [ -z "$TOML_FILE" ]; then
-            echo "CRITICAL FAILURE: Could not find 'wrangler.toml' anywhere."
-            echo "Listing all files in repository to help you debug:"
-            ls -R
-            exit 1
-          fi
-
-          echo "Found configuration file: $TOML_FILE"
-          
-          # 2. MOVE INTO THAT FOLDER
-          WORKER_DIR=$(dirname "$TOML_FILE")
-          echo "Moving into directory: $WORKER_DIR"
-          cd "$WORKER_DIR"
-
-          # 3. INSTALL DEPENDENCIES (Fixes 'missing something with checkout')
-          # If we see a package.json, we install the tools.
-          if [ -f "package.json" ]; then
-            echo "Found package.json. Installing dependencies..."
-            npm install
-          else
-            echo "No package.json found. Attempting to deploy without dependencies..."
-          fi
-
-          # 4. DEPLOY TO CLOUDFLARE
-          echo "Deploying to Cloudflare..."
-          npx wrangler deploy
-
-          echo "============================================"
-          echo "DEPLOYMENT SUCCESSFUL"
-          echo "============================================"
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: 'Cloudflare_Workers'

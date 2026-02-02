@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fetch local custom data
         let customProjects = [];
         try {
-            const localResponse = await fetch('VSCode_Projects/Data_Load/data.json');
+            const localResponse = await fetch('assets/data/data.json');
             if (localResponse.ok) {
                 const localData = await localResponse.json();
                 customProjects = localData.projects || [];
@@ -150,7 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        col.innerHTML = cardHtml;
+        // Sanitize the HTML before inserting
+        col.innerHTML = DOMPurify.sanitize(cardHtml, { ADD_ATTR: ['target'] });
         grid.appendChild(col);
     }
 
