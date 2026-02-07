@@ -77,12 +77,12 @@ jobs:
       - name: Configuration Help
         if: (steps.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.check-config.outputs.configured == 'false'
         run: |
-          echo "⚠️  CloudFlare Pages deployment skipped - project not configured"
+          echo "⚠️  Cloudflare Pages deployment skipped - project not configured"
           echo ""
-          echo "To enable CloudFlare Pages deployment:"
-          echo "1. Create a CloudFlare Pages project in your CloudFlare dashboard"
-          echo "2. Go to: https://github.com/${{ github.repository }}/settings/variables/actions"
+          echo "To enable Cloudflare Pages deployment:"
+          echo "1. Create a Cloudflare Pages project in your Cloudflare dashboard"
+          echo "2. Go to: https://github.com/${{ github.repository }}/settings/variables/actions/new"
           echo "3. Create a repository variable named: CLOUDFLARE_PAGES_PROJECT_NAME"
-          echo "4. Set its value to your CloudFlare Pages project name"
+          echo "4. Set its value to your Cloudflare Pages project name"
           echo ""
           echo "For more information, see the repository README.md"
