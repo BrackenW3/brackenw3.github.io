@@ -39,7 +39,7 @@ Add these variables in your repository settings (Settings > Secrets and variable
 
 #### Optional Secrets (for advanced workflows)
 
-3. **PAT_TOKEN** - Required only for `dispatch-update.yml` workflow
+1. **PAT_TOKEN** - Required only for `dispatch-update.yml` workflow
    - A GitHub Personal Access Token with `repo` scope
    - Only needed if you want to trigger workflows in other repositories
    - GitHub Settings > Developer settings > Personal access tokens > Generate new token

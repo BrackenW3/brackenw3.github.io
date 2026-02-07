@@ -69,7 +69,7 @@ The name of your Cloudflare Pages project. Workers deployment works independentl
 2. Navigate to **Settings** > **Secrets and variables** > **Actions** > **Variables**
 3. Click **New repository variable**
 4. Name: `CLOUDFLARE_PAGES_PROJECT_NAME`
-5. Value: Your Cloudflare Pages project name (e.g., `brackenw3-dashboard`)
+5. Value: Your Cloudflare Pages project name (e.g., `my-portfolio`, `my-analytics-dashboard`)
 6. Click **Add variable**
 
 **Why a variable instead of a secret?**
