@@ -139,10 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${langBadge}
                     <p class="card-text flex-grow-1">${description}</p>
                     <div class="mt-3">
-                        <button class="btn btn-outline-primary btn-sm view-readme" data-repo="${repo.name}">
+                        <button class="btn btn-outline-primary btn-sm view-readme" data-repo="${repo.name}" aria-label="View details for ${repo.name}" title="View details for ${repo.name}">
                             <i class="fas fa-book-open"></i> View Details
                         </button>
-                        <a href="${repo.html_url}" target="_blank" class="btn btn-dark btn-sm">
+                        <a href="${repo.html_url}" target="_blank" class="btn btn-dark btn-sm" aria-label="View source code for ${repo.name}" title="View source code for ${repo.name}">
                             <i class="fab fa-github"></i> Source
                         </a>
                     </div>
