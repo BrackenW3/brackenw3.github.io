@@ -1,0 +1,14 @@
+{
+  "name": "dashboard-api-worker",
+  "version": "1.0.0",
+  "description": "API worker for Bracken dashboard",
+  "main": "worker.js",
+  "private": true,
+  "scripts": {
+    "build": "echo 'No build script needed'",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
