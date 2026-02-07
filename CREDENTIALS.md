@@ -179,6 +179,45 @@ After setting up the credentials:
 - 🔄 Rotate tokens periodically for better security
 - 📝 Use descriptive names for tokens to track their usage
 
+## Network & Firewall Configuration
+
+### GitHub Actions and CloudFlare API Access
+
+GitHub Actions runners need to communicate with CloudFlare's API endpoints. The workflows include:
+- **Timeout protection**: Jobs timeout after 10 minutes, individual steps after 5 minutes
+- **Automatic retries**: GitHub Actions automatically retries transient network failures
+- **Explicit error handling**: Clear error messages for authentication and network issues
+
+### Firewall Considerations
+
+**For GitHub Enterprise users or self-hosted runners:**
+If you use GitHub Enterprise with strict firewall rules or self-hosted runners, ensure outbound access to:
+- `api.cloudflare.com` (port 443) - CloudFlare API
+- `*.workers.dev` (port 443) - Workers deployment
+- `*.pages.dev` (port 443) - Pages deployment
+
+**For github.com users:**
+GitHub-hosted runners have full internet access. No additional firewall configuration needed.
+
+### Troubleshooting Network Issues
+
+**Symptom: "Connection timeout" or "Network unreachable"**
+- **Cause**: Firewall blocking CloudFlare API access
+- **Solution**: 
+  - Verify your organization's firewall allows HTTPS to `*.cloudflare.com`
+  - Check if GitHub Actions is blocked by corporate proxy
+  - Contact your network administrator to whitelist CloudFlare domains
+
+**Symptom: "API returned 401 Unauthorized"**
+- **Cause**: Invalid or expired API token
+- **Solution**: Regenerate your CloudFlare API token and update the secret
+
+**Symptom: Workflow times out without error**
+- **Cause**: Network connectivity issues causing hangs
+- **Solution**: The workflow now includes timeout-minutes configuration to fail fast
+  - Job timeout: 10 minutes
+  - Deployment step timeout: 5 minutes
+
 ## Need Help?
 
 If you encounter issues:
@@ -186,3 +225,4 @@ If you encounter issues:
 2. Verify all credentials are correctly set in GitHub Settings
 3. Ensure your Cloudflare account has the necessary permissions
 4. Review the workflow files for any project-specific configuration needed
+5. For network/firewall issues, check the "Network & Firewall Configuration" section above
