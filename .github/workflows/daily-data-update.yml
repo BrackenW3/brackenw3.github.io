@@ -31,13 +31,11 @@ jobs:
         continue-on-error: true
         id: generate
 
-      - name: Check Script Status
+      - name: Script Status Info
         if: steps.generate.outcome == 'failure'
         run: |
-          echo "⚠️  Data generation script failed"
-          echo "This is expected if Python dependencies or script need updates"
-          echo "The workflow will continue but no data will be committed"
-          exit 0
+          echo "::warning::Data generation script failed. The workflow will continue but no data will be committed."
+          echo "This may be expected if Python dependencies or script need updates."
 
       - name: Commit and Push Changes
         if: steps.generate.outcome == 'success'
