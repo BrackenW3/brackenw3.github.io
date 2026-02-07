@@ -1,7 +1,7 @@
 import json
 import os
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pandas as pd
 import plotly.express as px
@@ -12,11 +12,13 @@ DATA_FILE = "assets/data/data.json"
 try:
     with open(DATA_FILE, "r") as f:
         data = json.load(f)
-except FileNotFoundError:
-    # If file doesn't exist, start with an empty structure but preserve expected keys
+except (FileNotFoundError, json.JSONDecodeError) as e:
+    # If file doesn't exist or is malformed, start with an empty structure but preserve expected keys
+    if isinstance(e, json.JSONDecodeError):
+        print(f"Warning: '{DATA_FILE}' contains invalid JSON. Initializing with default structure.")
     data = {"projects": []}
 
-data["last_updated"] = datetime.now().isoformat()
+data["last_updated"] = datetime.now(timezone.utc).isoformat()
 
 with open(DATA_FILE, "w") as f:
     json.dump(data, f, indent=4)
@@ -33,15 +35,15 @@ df = pd.DataFrame({
     "Profit": [random.randint(10, 100) for _ in range(30)]
 })
 
-fig = px.line(df, x="Date", y="Sales", color="Category", title=f"Daily Sales Report (Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')})")
+fig = px.line(df, x="Date", y="Sales", color="Category", title=f"Daily Sales Report (Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')})")
 
 # Save to HTML
 OUTPUT_DIR = "dashboard_files"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "plotly_chart.html")
 
-# write_html includes the necessary JS bundle for standalone viewing
-fig.write_html(OUTPUT_FILE)
+# Use CDN to avoid embedding large Plotly JS bundle, keeping daily commits small
+fig.write_html(OUTPUT_FILE, include_plotlyjs='cdn')
 print(f"Generated chart at {OUTPUT_FILE}")
 
 # 3. Generate PyGWalker Explorer

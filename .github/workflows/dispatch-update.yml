@@ -22,9 +22,6 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v3
         with:
