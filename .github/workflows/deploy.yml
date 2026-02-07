@@ -1,22 +1,64 @@
-name: Deploy Worker
+name: Deploy to Cloudflare
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'Cloudflare_Workers/**'
+      - '*.html'
+      - 'assets/**'
+      - 'dashboard_files/**'
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-worker:
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Deploy Worker
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check for Worker Changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            worker:
+              - 'Cloudflare_Workers/**'
+
       - name: Deploy to Cloudflare Workers
+        if: steps.changes.outputs.worker == 'true' || github.event_name == 'workflow_dispatch'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: 'Cloudflare_Workers'
+
+  deploy-pages:
+    runs-on: ubuntu-latest
+    name: Deploy Pages
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for Frontend Changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            frontend:
+              - '*.html'
+              - 'assets/**'
+              - 'dashboard_files/**'
+
+      - name: Deploy to Cloudflare Pages
+        if: steps.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'bracken-analytics' # UPDATE THIS with your Cloudflare Pages project name
+          directory: '.'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

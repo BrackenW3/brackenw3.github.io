@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+      <title>Pyodide Demo</title>
+      <meta charset="utf-8">
+      <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+      <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #output { padding: 10px; background: #f4f4f4; border: 1px solid #ddd; margin-top: 10px; }
+      </style>
+  </head>
+  <body>
+    <h1>Pyodide Demo: Python in the Browser</h1>
+    <p>This page demonstrates running Python code directly in your browser using WebAssembly (Pyodide). This allows for dynamic data analysis without a backend server.</p>
+
+    <button onclick="runPythonCode()">Run Python Calculation</button>
+
+    <div id="output">Initializing Pyodide...</div>
+
+    <script type="text/javascript">
+      let pyodideReady = false;
+      let pyodideInstance = null;
+
+      async function main(){
+        pyodideInstance = await loadPyodide();
+        pyodideReady = true;
+        document.getElementById("output").innerText = "Pyodide loaded. Click the button to run Python code.";
+      }
+      main();
+
+      async function runPythonCode() {
+        if (!pyodideReady) return;
+
+        document.getElementById("output").innerText = "Running...";
+
+        // Example Python code
+        let pythonCode = `
+import math
+import random
+
+numbers = [random.randint(1, 100) for _ in range(10)]
+mean = sum(numbers) / len(numbers)
+f"Generated numbers: {numbers}\\nMean: {mean:.2f}"
+        `;
+
+        try {
+            let result = await pyodideInstance.runPythonAsync(pythonCode);
+            document.getElementById("output").innerText = result;
+        } catch (err) {
+            document.getElementById("output").innerText = err;
+        }
+      }
+    </script>
+  </body>
+</html>
