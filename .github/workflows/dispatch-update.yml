@@ -25,10 +25,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check for PAT Token
+        id: check_token
+        run: |
+          if [ -z "${{ secrets.PAT_TOKEN }}" ]; then
+            echo "token_exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "token_exists=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Repository Dispatch
+        if: steps.check_token.outputs.token_exists == 'true'
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.PAT_TOKEN }} # Requires a Personal Access Token with repo scope
+          token: ${{ secrets.PAT_TOKEN }}
           repository: ${{ inputs.target_repository }}
           event-type: ${{ inputs.event_type }}
           client-payload: ${{ inputs.payload }}
+
+      - name: PAT Token Not Configured
+        if: steps.check_token.outputs.token_exists == 'false'
+        run: |
+          echo "❌ PAT_TOKEN secret not configured"
+          echo ""
+          echo "To enable repository dispatch:"
+          echo "1. Create a Personal Access Token (classic) with 'repo' scope"
+          echo "   GitHub Settings > Developer settings > Personal access tokens > Tokens (classic) > Generate new token"
+          echo "2. Add it as a repository secret named 'PAT_TOKEN'"
+          echo "   Repository Settings > Secrets and variables > Actions > Secrets > New repository secret"
+          echo ""
+          echo "This token is required to trigger workflows in other repositories"
+          exit 1
