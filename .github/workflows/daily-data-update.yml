@@ -30,5 +30,5 @@ jobs:
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: automated data update [skip ci]"
+          commit_message: "chore: automated data update"
           file_pattern: 'assets/data/data.json dashboard_files/*.html'

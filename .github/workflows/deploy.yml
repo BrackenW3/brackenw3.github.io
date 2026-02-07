@@ -38,7 +38,6 @@ jobs:
   deploy-pages:
     runs-on: ubuntu-latest
     name: Deploy Pages
-    if: always()
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,12 +52,37 @@ jobs:
               - 'assets/**'
               - 'dashboard_files/**'
 
-      - name: Deploy to Cloudflare Pages
+      - name: Check Project Configuration
+        id: check-config
         if: steps.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          if [ -z "${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "::warning::CLOUDFLARE_PAGES_PROJECT_NAME repository variable is not set. Please configure it in repository settings."
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+            echo "Project name: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}"
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        if: (steps.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.check-config.outputs.configured == 'true'
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'bracken-analytics' # UPDATE THIS with your Cloudflare Pages project name
+          projectName: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
           directory: '.'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configuration Help
+        if: (steps.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.check-config.outputs.configured == 'false'
+        run: |
+          echo "⚠️  Cloudflare Pages deployment skipped - project not configured"
+          echo ""
+          echo "To enable Cloudflare Pages deployment:"
+          echo "1. Create a Cloudflare Pages project in your Cloudflare dashboard"
+          echo "2. Go to: https://github.com/${{ github.repository }}/settings/variables/actions/new"
+          echo "3. Create a repository variable named: CLOUDFLARE_PAGES_PROJECT_NAME"
+          echo "4. Set its value to your Cloudflare Pages project name"
+          echo ""
+          echo "For more information, see the repository README.md"
