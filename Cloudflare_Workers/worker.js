@@ -28,8 +28,7 @@ function getCorsHeaders(request) {
     };
   }
 
-  // If not allowed, we can either return no CORS headers (blocking the browser)
-  // or return restrictive ones. We'll return null to be explicit.
+  // If not allowed, we return restrictive headers or simply "null"
   return {
     "Access-Control-Allow-Origin": "null",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -40,27 +39,35 @@ function getCorsHeaders(request) {
 
 export default {
   async fetch(request, env, ctx) {
-    const corsHeaders = getCorsHeaders(request);
+    // Wrap entire logic in try-catch to avoid crashing the worker
+    try {
+      const corsHeaders = getCorsHeaders(request);
 
-    // Handle CORS Preflight
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: corsHeaders,
+      // Handle CORS Preflight
+      if (request.method === "OPTIONS") {
+        return new Response(null, {
+          headers: corsHeaders,
+        });
+      }
+
+      const url = new URL(request.url);
+
+      // Endpoint: /api/secure-data
+      if (url.pathname === "/api/secure-data") {
+        return await handleSecureData(request, env, corsHeaders);
+      }
+
+      // Default Response
+      return new Response("Welcome to the Secure Worker API", {
+        status: 200,
+        headers: corsHeaders
+      });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
       });
     }
-
-    const url = new URL(request.url);
-
-    // Endpoint: /api/secure-data
-    if (url.pathname === "/api/secure-data") {
-      return await handleSecureData(request, env, corsHeaders);
-    }
-
-    // Default Response
-    return new Response("Welcome to the Secure Worker API", {
-      status: 200,
-      headers: corsHeaders
-    });
   },
 };
 
