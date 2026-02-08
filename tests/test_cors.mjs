@@ -1,7 +1,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
 // Dynamic import or relative import
-import worker from '../Cloudflare_Workers/worker.js';
+import worker from '../Cloudflare_Workers/worker.mjs';
 
 // Mock global fetch for handleSecureData
 const originalFetch = global.fetch;
