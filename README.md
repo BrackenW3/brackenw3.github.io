@@ -10,8 +10,40 @@ The site is automatically deployed to Cloudflare via GitHub Actions (`.github/wo
 - **Backend (Workers):** The `Cloudflare_Workers/` directory is deployed as a Cloudflare Worker.
 
 **Setup Required:**
-1.  Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to your Repository Secrets.
-2.  Update `projectName` in `.github/workflows/deploy.yml` to match your Cloudflare Pages project name.
+
+#### Required Secrets
+Add these secrets in your repository settings (Settings > Secrets and variables > Actions > Secrets):
+
+1. **CLOUDFLARE_API_TOKEN** - Required for both Workers and Pages deployment
+   - Go to Cloudflare Dashboard > My Profile > API Tokens > Create Token
+   - Use the "Edit Cloudflare Workers" template OR create a custom token with:
+     - Account: Cloudflare Workers Scripts - Edit
+     - Account: Cloudflare Pages - Edit
+   - Copy the token and add it as a repository secret
+
+2. **CLOUDFLARE_ACCOUNT_ID** - Required for both Workers and Pages deployment
+   - Found in your Cloudflare Dashboard URL: `https://dash.cloudflare.com/{ACCOUNT_ID}`
+   - Or in any domain overview page under "Account ID" on the right sidebar
+   - Add it as a repository secret
+
+#### Required Variables
+Add these variables in your repository settings (Settings > Secrets and variables > Actions > Variables):
+
+1. **CLOUDFLARE_PAGES_PROJECT_NAME** - Required for Pages deployment only
+   - The name of your Cloudflare Pages project
+   - If you don't have one yet:
+     - Go to Cloudflare Dashboard > Pages > Create a project
+     - Use "Direct Upload" method and note the project name
+   - Add the project name as a repository variable
+   - **Note:** Worker deployment works independently and doesn't require this
+
+#### Optional Secrets (for advanced workflows)
+
+1. **PAT_TOKEN** - Required only for `dispatch-update.yml` workflow
+   - A GitHub Personal Access Token with `repo` scope
+   - Only needed if you want to trigger workflows in other repositories
+   - GitHub Settings > Developer settings > Personal access tokens > Generate new token
+   - Grant `repo` scope and add as repository secret
 
 ## Workflows
 

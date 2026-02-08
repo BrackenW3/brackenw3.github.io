@@ -15,6 +15,7 @@ jobs:
   deploy-worker:
     runs-on: ubuntu-latest
     name: Deploy Worker
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,6 +31,7 @@ jobs:
       - name: Deploy to Cloudflare Workers
         if: steps.changes.outputs.worker == 'true' || github.event_name == 'workflow_dispatch'
         uses: cloudflare/wrangler-action@v3
+        timeout-minutes: 5
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -38,6 +40,7 @@ jobs:
   deploy-pages:
     runs-on: ubuntu-latest
     name: Deploy Pages
+    timeout-minutes: 10
     if: always()
     steps:
       - name: Checkout
@@ -54,11 +57,28 @@ jobs:
               - 'dashboard_files/**'
 
       - name: Deploy to Cloudflare Pages
-        if: steps.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        if: (steps.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && vars.CLOUDFLARE_PAGES_PROJECT_NAME != ''
         uses: cloudflare/pages-action@v1
+        timeout-minutes: 5
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'bracken-analytics' # UPDATE THIS with your Cloudflare Pages project name
+          projectName: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
           directory: '.'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Cloudflare Pages Configuration Required
+        if: (steps.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && vars.CLOUDFLARE_PAGES_PROJECT_NAME == ''
+        run: |
+          echo "⚠️  Cloudflare Pages deployment skipped - CLOUDFLARE_PAGES_PROJECT_NAME variable not configured"
+          echo ""
+          echo "To enable Cloudflare Pages deployment:"
+          echo "1. Create a Cloudflare Pages project in your Cloudflare dashboard"
+          echo "2. Add the project name as a repository variable named 'CLOUDFLARE_PAGES_PROJECT_NAME'"
+          echo "   Settings > Secrets and variables > Actions > Variables > New repository variable"
+          echo ""
+          echo "Required secrets (if not already configured):"
+          echo "  - CLOUDFLARE_API_TOKEN: Your Cloudflare API token with Workers and Pages permissions"
+          echo "  - CLOUDFLARE_ACCOUNT_ID: Your Cloudflare account ID"
+          echo ""
+          echo "✅ Worker deployment continues independently"

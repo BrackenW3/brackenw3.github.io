@@ -22,12 +22,23 @@ jobs:
           cache: 'pip' # Caches dependencies based on requirements.txt
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run Data Generation Script
         run: python scripts/generate_dashboard.py
+        continue-on-error: true
+        id: generate
+
+      - name: Script Status Info
+        if: steps.generate.outcome == 'failure'
+        run: |
+          echo "::warning::Data generation script failed. The workflow will continue but no data will be committed."
+          echo "This may be expected if Python dependencies or script need updates."
 
       - name: Commit and Push Changes
+        if: steps.generate.outcome == 'success'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: automated data update [skip ci]"
