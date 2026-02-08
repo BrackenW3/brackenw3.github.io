@@ -1,5 +1,5 @@
 name = "dashboard-api-worker"
-main = "worker.js"
+main = "worker.mjs"
 compatibility_date = "2023-10-25"
 
 # Workers Logs
