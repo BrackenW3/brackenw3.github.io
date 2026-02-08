@@ -4,20 +4,48 @@
  * This worker acts as a secure gateway. It verifies an Authorization header
  * (simulating a token check) before processing the request.
  *
- * In a real application, you would validate the token against a KV store
- * or an external identity provider (like Auth0 or GitHub).
+ * It implements a strict CORS policy whitelisting specific origins.
  */
+
+const ALLOWED_ORIGINS = [
+  "https://willbracken.com",
+  "https://brackenw3.github.io",
+  "https://bracken-analytics.pages.dev"
+];
+
+function getCorsHeaders(request) {
+  const origin = request.headers.get("Origin");
+
+  // Check if origin is in whitelist or matches localhost regex
+  const isAllowed = ALLOWED_ORIGINS.includes(origin) || (origin && /^http:\/\/localhost(:\d+)?$/.test(origin));
+
+  if (isAllowed) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Vary": "Origin"
+    };
+  }
+
+  // If not allowed, we can either return no CORS headers (blocking the browser)
+  // or return restrictive ones. We'll return null to be explicit.
+  return {
+    "Access-Control-Allow-Origin": "null",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Vary": "Origin"
+  };
+}
 
 export default {
   async fetch(request, env, ctx) {
+    const corsHeaders = getCorsHeaders(request);
+
     // Handle CORS Preflight
     if (request.method === "OPTIONS") {
       return new Response(null, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        },
+        headers: corsHeaders,
       });
     }
 
@@ -25,15 +53,18 @@ export default {
 
     // Endpoint: /api/secure-data
     if (url.pathname === "/api/secure-data") {
-      return await handleSecureData(request, env);
+      return await handleSecureData(request, env, corsHeaders);
     }
 
     // Default Response
-    return new Response("Welcome to the Secure Worker API", { status: 200 });
+    return new Response("Welcome to the Secure Worker API", {
+      status: 200,
+      headers: corsHeaders
+    });
   },
 };
 
-async function handleSecureData(request, env) {
+async function handleSecureData(request, env, corsHeaders) {
   const authHeader = request.headers.get("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -41,7 +72,7 @@ async function handleSecureData(request, env) {
       status: 401,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        ...corsHeaders
       },
     });
   }
@@ -75,7 +106,7 @@ async function handleSecureData(request, env) {
           status: 200,
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
+            ...corsHeaders
           },
         });
     } else {
@@ -84,7 +115,7 @@ async function handleSecureData(request, env) {
             status: 403,
             headers: {
               "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*"
+              ...corsHeaders
             },
         });
     }
@@ -93,7 +124,7 @@ async function handleSecureData(request, env) {
           status: 500,
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
+            ...corsHeaders
           },
       });
   }

@@ -49,3 +49,12 @@ This repository demonstrates how to integrate Python data science tools into a w
     ```
 3.  **View Site:**
     Open `index.html` or `data-visualization.html` in your browser.
+
+## GitKraken Integration
+
+This repository is optimized for [GitKraken](https://www.gitkraken.com/), a powerful Git GUI. We recommend using GitKraken for:
+- Visualizing commit history and branch merges.
+- Managing complex merge conflicts.
+- Creating and reviewing Pull Requests directly.
+
+To get started, simply open this repository folder in GitKraken.
