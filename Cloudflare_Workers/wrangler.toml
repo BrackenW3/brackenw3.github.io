@@ -1,6 +1,6 @@
 name = "dashboard-api-worker"
 main = "worker.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2023-10-25"
 
 # Workers Logs
 # Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
